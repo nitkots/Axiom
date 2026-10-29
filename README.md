@@ -10,15 +10,43 @@ A local privacy agent for macOS.<br />Inspect documents, apply privacy policies,
 
 [![Status: Experimental](https://img.shields.io/badge/status-experimental-e8b86d?style=flat-square)](docs/RELEASE.md)
 [![Platform: macOS](https://img.shields.io/badge/platform-macOS-879fe0?style=flat-square)](docs/RELEASE.md)
-[![Verification](https://github.com/Shrithan/Axiom/actions/workflows/verify.yml/badge.svg)](https://github.com/Shrithan/Axiom/actions/workflows/verify.yml)
+[![Verification](https://github.com/nitkots/Axiom/actions/workflows/verify.yml/badge.svg)](https://github.com/nitkots/Axiom/actions/workflows/verify.yml)
 
-[Get started](#get-started) · [Features](#what-it-does) · [Try a policy](#try-a-policy) · [Browser setup](browser-extension/README.md) · [Architecture](#how-it-works) · [Limitations](#know-the-boundary)
+[At a glance](#at-a-glance) · [Get started](#get-started) · [Features](#what-it-does) · [Try a policy](#try-a-policy) · [Browser setup](browser-extension/README.md) · [Architecture](#how-it-works) · [Limitations](#know-the-boundary)
 
 ![Axiom desktop overview](docs/immersive/screenshots/overview.png)
 
 </div>
 
 > **Experimental prototype.** Axiom enforces specific local workflows; it is not universal or tamper-resistant enterprise DLP. The employee app is functional. The admin app is a disconnected prototype.
+
+## At a glance
+
+**Axiom is a privacy guard that runs entirely on your Mac.** It reads the documents, clipboard text and browser uploads you choose to protect, finds sensitive information (personal data, secrets, or your own keywords and patterns), and then allows, warns, redacts or blocks according to policies you set. Nothing is sent to a server: detection, policies and history all stay on your machine.
+
+1. **Point it at something:** import a document, select folders to watch, or turn on clipboard and Chrome protection.
+2. **It inspects locally:** text is extracted, normalized and run through privacy, secret and custom detectors.
+3. **Your policy decides:** the strictest matching rule wins (**BLOCK > REDACT > WARN > ALLOW**), and you can export a protected copy while the original stays untouched.
+
+### Tech stack
+
+| Layer | Built with | Where |
+| --- | --- | --- |
+| Desktop interface | React 19, TypeScript 5.8, Vite 7 | `axiom-employee/src` |
+| Native agent | Tauri 2.10 (Rust): tray app, clipboard monitoring, folder watching (`notify`), background job queue | `axiom-employee/src-tauri` |
+| Detection engine | Python 3.10+: PyMuPDF, python-docx, openpyxl and `regex` for extraction; detectors, policy and transformation modules | `axiom-employee/scripts/axiom_agent` |
+| Browser protection | Chrome Manifest V3 extension + Native Messaging host | `browser-extension` |
+| Admin console | React + Tauri (disconnected prototype) | `axiom-admin` |
+| Verification | `scripts/verify.py`: Python, Rust, extension and UI suites (197 tests); GitHub Actions on macOS | `scripts`, `.github/workflows` |
+
+### Ways to run it
+
+| Mode | Use it for | How |
+| --- | --- | --- |
+| Desktop app (dev) | The full experience: documents, policies, clipboard, folders | [Get started](#get-started) |
+| Browser scanner | Quick manual scans without the native app | [Manual scanner](#get-started), served on `127.0.0.1` only |
+| Built macOS app | An unsigned `.app` for day-to-day testing | [Build and run](#get-started) |
+| Chrome extension | Guarding supported upload forms | [Connect Chrome](#connect-chrome) |
 
 ## A quieter place to manage privacy
 
@@ -48,7 +76,7 @@ Sensitive content is processed locally. The active employee workflow uses no clo
 **Requirements:** macOS, Node.js 22.12+, Python 3.10+, Rust stable and Xcode Command Line Tools. Python and parser dependencies are currently external prerequisites.
 
 ```sh
-git clone https://github.com/Shrithan/Axiom.git
+git clone https://github.com/nitkots/Axiom.git
 cd Axiom
 
 python3 -m venv .venv
